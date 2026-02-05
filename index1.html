@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subdomain Takeover Proof of Concept</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .vulnerability { background: #fff3cd; padding: 20px; margin: 20px 0; border-left: 5px solid #ffc107; }
+        .cmd { background: #000; color: #0ff; padding: 15px; border-radius: 5px; font-family: monospace; }
+        .evidence { background: #f8f9fa; padding: 15px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>🔓 Subdomain Takeover Vulnerabilities</h1>
+    
+    <div class="vulnerability">
+        <h2>🚨 Vulnerable: yoda.pharmeasy.in</h2>
+        <p><strong>Type:</strong> CloudFront + S3 Bucket Misconfiguration</p>
+        
+        <h3>Evidence:</h3>
+        <div class="evidence">
+            <h4>1. CloudFront 404 Error:</h4>
+            <div class="cmd">
+                $ curl -I https://yoda.pharmeasy.in<br>
+                HTTP/1.1 404 Not Found<br>
+                Server: CloudFront<br>
+                X-Cache: Error from cloudfront
+            </div>
+            
+            <h4>2. S3 Bucket Doesn't Exist:</h4>
+            <div class="cmd">
+                $ curl yoda.pharmeasy.in.s3.amazonaws.com<br>
+                &lt;Error&gt;<br>
+                &lt;Code&gt;NoSuchBucket&lt;/Code&gt;<br>
+                &lt;Message&gt;The specified bucket does not exist&lt;/Message&gt;
+            </div>
+        </div>
+        
+        <h3>Attack Scenario:</h3>
+        <ol>
+            <li>Attacker creates S3 bucket: <code>yoda.pharmeasy.in</code></li>
+            <li>Uploads phishing page to bucket</li>
+            <li>CloudFront automatically serves attacker's content</li>
+            <li>Users visit <code>https://yoda.pharmeasy.in</code> → See phishing page</li>
+        </ol>
+        
+        <h3>Impact:</h3>
+        <ul>
+            <li>✅ Phishing under trusted domain</li>
+            <li>✅ Credential theft</li>
+            <li>✅ Malware distribution</li>
+            <li>✅ Brand reputation damage</li>
+        </ul>
+    </div>
+    
+    <hr>
+    
+    <h2>📋 How to Reproduce:</h2>
+    <div class="cmd">
+        # 1. Check current state<br>
+        curl -I https://yoda.pharmeasy.in<br>
+        <br>
+        # 2. Check S3 bucket<br>
+        curl yoda.pharmeasy.in.s3.amazonaws.com<br>
+        <br>
+        # 3. DNS points to CloudFront<br>
+        nslookup yoda.pharmeasy.in
+    </div>
+    
+    <p style="margin-top: 30px; color: #666;">
+        This is a security demonstration for responsible disclosure.<br>
+        All findings have been reported to the appropriate security team.
+    </p>
+</body>
+</html>
